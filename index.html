@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Клиентский кабинет Websocket</title>
+</head>
+<body>
+  <h1>Клиентский кабинет Websocket</h1>
+  
+  <label for="keyword">Keyword:</label>
+  <input type="text" id="keyword">
+  <button onclick="sendKeyword()">Submit</button>
+  
+  <h2>URL Лист:</h2>
+  <p><span id="urlList"></span></p>
+
+  <h2>Код ошибки</h2>
+  <p><span id="codeError"></span></p>
+
+  <h2>Статус загрузки:</h2>
+  <p>Объем: <span id="statusSize"></span></p>
+  <p>Количество потоков: <span id="statusThreads"></span></p>
+  <p>Прогресс: <span id="statusProgress"></span>%</p>
+
+  <script>
+    const socket = new WebSocket('ws://localhost:3000');
+
+    socket.onopen = function() {
+      console.log('WebSocket HTML established');
+    };
+
+    socket.onmessage = function(event) {
+      const data = JSON.parse(event.data);
+      console.log(data);
+      document.getElementById('codeError').textContent = '';
+      if (data.url) {
+      document.getElementById('urlList').textContent = data.url;
+      } else if (data.progress !== undefined) {
+        document.getElementById('statusThreads').textContent = data.threads;
+        document.getElementById('statusProgress').textContent = data.progress;
+      } else if (data.message) {
+        console.log(data.message);
+      } else if (data.myError){
+        document.getElementById('urlList').textContent = '';
+        document.getElementById('codeError').textContent = data.myError;
+      }
+    };
+
+    function sendKeyword() {
+      const keyword = document.getElementById('keyword').value;
+      socket.send(keyword);
+    }
+
+    function displayContent() {
+      const contentList = document.getElementById('contentList');
+      const selectedContent = document.getElementById('selectedContent');
+      const selectedOption = contentList.options[contentList.selectedIndex];
+      selectedContent.textContent = selectedOption.textContent;
+    }
+  </script>
+</body>
+</html>
